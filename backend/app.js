@@ -12,27 +12,41 @@ const api = process.env.API_URL;
 app.use(express.json());
 app.use(morgan('tiny'));
 
-app.get(`${api}/products`, (req, res) => {
-    const product = {
-        id: 1,
-        name: 'hair dresser',
-        image: 'some_url'
-    }
-    res.send(product);
+const productScheme = mongoose.Schema({
+    name: String,
+    image: String,
+    countInStock: Number
+})
+
+const Product = mongoose.model('Product', productScheme);
+
+app.get(`${api}/products`, async (req, res) => {
+    const productList = await Product.find()
+    res.send(productList);
 })
 
 app.post(`${api}/products`, (req, res) => {
-    const newProduct = req.body;
-    console.log(newProduct);
-    res.send(newProduct);
+    const product = new Product({
+        name: req.body.name,
+        image: req.body.image,
+        countInStock: req.body.countInStock
+    })
+    product.save().then((createdProduct => {
+        res.status(201).json(createdProduct)
+    })).catch((err) => {
+        res.status(500).json({
+            error: err,
+            success: false
+        })
+    })
 })
 
 mongoose.connect(process.env.CONNECTION_STRING).then(() => {
     console.log('Database Connection is ready....')
-})
-.catch((err)=> {
+}).catch((err)=> {
     console.log(err);
 })
+
 app.listen(3000, ()=>{
     console.log('Server is running http://localhost:3000');
 })
