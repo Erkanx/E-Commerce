@@ -2,6 +2,7 @@ const { config } = require('dotenv');
 const express = require('express');
 const app = express();
 const morgan = require('morgan');
+const mongoose = require('mongoose');
 
 require('dotenv/config');
 
@@ -26,6 +27,12 @@ app.post(`${api}/products`, (req, res) => {
     res.send(newProduct);
 })
 
+mongoose.connect(process.env.CONNECTION_STRING).then(() => {
+    console.log('Database Connection is ready....')
+})
+.catch((err)=> {
+    console.log(err);
+})
 app.listen(3000, ()=>{
     console.log('Server is running http://localhost:3000');
 })
